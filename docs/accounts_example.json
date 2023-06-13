@@ -1,0 +1,18 @@
+{
+  "accounts" : [
+    {
+      "name": "2factor_account",
+      "key" : "DEADBEEF",
+      "hash" : "sha1",
+      "interval" : 60,
+      "type" : "hotp",
+      "flavor: "google"
+    },
+    {
+      "key" : "SECRET",
+      "type" : "totp",
+      "hash" : "sha1",
+      "interval" : 60
+    } 
+  ]
+}
