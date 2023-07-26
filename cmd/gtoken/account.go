@@ -6,6 +6,7 @@ import (
   "github.com/spf13/cobra"
 
   "github.com/charmbracelet/bubbletea"
+  "github.com/jedib0t/go-pretty/v6/table"
 )
 
 var (
@@ -31,10 +32,32 @@ var (
     Long: "Displays a list of all OTP accounts currently configured in the database.",
     Aliases: []string{"l", "ls"},
     Run: func(cmd *cobra.Command, args []string) {
-      if _, err := tea.NewProgram(TableInitialModel()).Run(); err != nil {
-        fmt.Printf("Could Not Start Program. Err: %s\n", err);
+      // load tokens
+      var tokens []tokenObject;
+      var tokenError error;
+
+      tokens, tokenError = GenerateTokens();
+      if tokenError != nil {
+        fmt.Printf("Cannot Generate Tokens. Err: %s\n", tokenError);
         os.Exit(1);
       }
+      // Display Tokens
+      tbl := table.NewWriter();
+      tbl.SetOutputMirror(os.Stdout);
+      tbl.AppendHeader(table.Row{"Account Name", "E-Mail Address", "Type", "Flavor", "Validity", "Token"});
+      for item := range tokens {
+        tbl.AppendRow(table.Row{
+          tokens[item].account_name,
+          tokens[item].email,
+          tokens[item].totp_type,
+          tokens[item].totp_flavor,
+          tokens[item].totp_interval,
+          tokens[item].token,
+        });
+      }
+      tbl.Render();
+
+      os.Exit(0);
     },
   }
 

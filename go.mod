@@ -7,6 +7,7 @@ require (
 	github.com/charmbracelet/bubbletea v0.24.1
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/google/uuid v1.3.0
+	github.com/jedib0t/go-pretty/v6 v6.4.6
 	github.com/mcaimi/go-totp v0.0.0-20230328103202-f959d7bdb83c
 	github.com/spf13/cobra v1.6.1
 )
