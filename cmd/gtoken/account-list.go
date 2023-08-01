@@ -1,24 +1,11 @@
 package gtoken
 
 import (
-  "fmt"
-
   "github.com/mcaimi/gtoken/pkg/gtoken"
   "github.com/mcaimi/gtoken/pkg/common"
 
   "github.com/mcaimi/go-totp/rfc6238"
 )
-
-type tokenObject struct {
-  account_name string;
-  email string;
-  totp_algo string;
-  totp_flavor string;
-  totp_interval string;
-  totp_type string;
-  totp_uuid string;
-  token string;
-}
 
 func GenerateTokens() ([]tokenObject, error) {
   var acctDb gtoken.Database;
@@ -49,7 +36,7 @@ func GenerateTokens() ([]tokenObject, error) {
     }
 
     // update table data
-    rows[i] = tokenObject{a.Name, a.Email, a.Hash, a.Flavor, fmt.Sprintf("%d", a.Interval), a.Type, a.Uuid, token};
+    rows[i] = tokenObject{a.Uuid, a.Name, a.Email, a.Hash, a.Flavor, a.Interval, a.Type, a.Uuid, token};
   }
 
   return rows, nil;

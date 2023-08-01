@@ -25,6 +25,26 @@ const (
   totp_uuid;
 )
 
+type tokenObject struct {
+  entry_uuid string;
+  account_name string;
+  email string;
+  totp_algo string;
+  totp_flavor string;
+  totp_interval int;
+  totp_type string;
+  totp_uuid string;
+  token string;
+}
+
+func stringNotZeroLen(s string) bool {
+  if len(s) == 0 {
+    return false;
+  }
+
+  return true;
+}
+
 func validateIntegerInput(s string) error {
   _, err := strconv.ParseInt(s, 10, inputLength);
   return err;

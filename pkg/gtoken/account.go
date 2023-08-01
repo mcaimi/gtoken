@@ -96,7 +96,7 @@ func (d *Database) WriteAccountsDB(fileName string) error {
   var err error;
 
   // open new file
-  accountDescriptor, err = os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0700);
+  accountDescriptor, err = os.OpenFile(fileName, os.O_TRUNC|os.O_RDWR|os.O_CREATE, 0700);
   if err != nil {
     return err;
   }
