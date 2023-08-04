@@ -35,6 +35,7 @@ type tokenObject struct {
   totp_type string;
   totp_uuid string;
   token string;
+  seed string;
 }
 
 func stringNotZeroLen(s string) bool {

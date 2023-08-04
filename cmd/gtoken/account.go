@@ -22,7 +22,7 @@ var (
     Short: "Manage OTP Accounts",
     Long: "Manage the OTP Account database. Add, Remove or Update OTP Account Entries.",
     Aliases: []string{"a", "acct"},
-    Run: func(cmd *cobra.Command, args []string) {},
+    Run: func(cmd *cobra.Command, args []string) { generateCmd.Run(cmd, args); },
   }
 
   listCmd = &cobra.Command {
@@ -30,6 +30,62 @@ var (
     Short: "List available token accounts",
     Long: "Displays a list of all OTP accounts currently configured in the database.",
     Aliases: []string{"l", "ls"},
+    Run: func(cmd *cobra.Command, args []string) {
+      // load tokens
+      var tokens []tokenObject;
+      var tokenError error;
+
+      // flags
+      var accountUUID string;
+      var showSeed bool;
+      accountUUID, _ = cmd.Flags().GetString("show-seed");
+      showSeed = stringNotZeroLen(accountUUID);
+
+      tokens, tokenError = GenerateTokens();
+      if tokenError != nil {
+        fmt.Printf("Cannot Generate Tokens. Err: %s\n", tokenError);
+        os.Exit(1);
+      }
+      // Display Tokens
+      tbl := table.NewWriter();
+      tbl.SetOutputMirror(os.Stdout);
+
+      if ! showSeed {
+        tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Type", "Flavor"});
+        for item := range tokens {
+          tbl.AppendRow(table.Row{
+            tokens[item].entry_uuid,
+            tokens[item].account_name,
+            tokens[item].email,
+            tokens[item].totp_type,
+            tokens[item].totp_flavor,
+          });
+        }
+      } else {
+        tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Seed"});
+        for item := range tokens {
+          if tokens[item].entry_uuid == accountUUID {
+          tbl.AppendRow(table.Row{
+              tokens[item].entry_uuid,
+              tokens[item].account_name,
+              tokens[item].email,
+              tokens[item].seed,
+            });
+          }
+        }
+      }
+      tbl.Render();
+
+      // ok
+      os.Exit(0);
+    },
+  }
+
+  generateCmd = &cobra.Command {
+    Use: "generate",
+    Short: "Compute token values",
+    Long: "Generates tokens for all registered accounts",
+    Aliases: []string{"g", "gen"},
     Run: func(cmd *cobra.Command, args []string) {
       // load tokens
       var tokens []tokenObject;
@@ -43,14 +99,11 @@ var (
       // Display Tokens
       tbl := table.NewWriter();
       tbl.SetOutputMirror(os.Stdout);
-      tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Type", "Flavor", "Validity", "Token"});
+      tbl.AppendHeader(table.Row{"Account Name", "E-Mail Address", "Interval", "Token Value"});
       for item := range tokens {
         tbl.AppendRow(table.Row{
-          tokens[item].entry_uuid,
           tokens[item].account_name,
           tokens[item].email,
-          tokens[item].totp_type,
-          tokens[item].totp_flavor,
           tokens[item].totp_interval,
           tokens[item].token,
         });
@@ -144,12 +197,16 @@ func init() {
   insertCmd.Flags().IntP("interval", "i", 30, "Token Refresh Interval (seconds)");
   insertCmd.Flags().StringP("seed", "s", "", "Token Secret Seed");
 
+  // define flags (list cmd)
+  listCmd.Flags().StringP("show-seed", "s", "", "Show the Token Seed associated with the specific Account UUID");
+
   // define flags (delete command)
   removeCmd.Flags().StringP("uuid", "u", "", "The UUID of the account that needs to be deleted from the Account DB");
 
   // build command
   accountCmd.AddCommand(listCmd);
   accountCmd.AddCommand(insertCmd);
+  accountCmd.AddCommand(generateCmd);
   accountCmd.AddCommand(removeCmd);
   rootCommand.AddCommand(accountCmd);
 }

@@ -36,7 +36,7 @@ func GenerateTokens() ([]tokenObject, error) {
     }
 
     // update table data
-    rows[i] = tokenObject{a.Uuid, a.Name, a.Email, a.Hash, a.Flavor, a.Interval, a.Type, a.Uuid, token};
+    rows[i] = tokenObject{a.Uuid, a.Name, a.Email, a.Hash, a.Flavor, a.Interval, a.Type, a.Uuid, token, a.Key};
   }
 
   return rows, nil;
