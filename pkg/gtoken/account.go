@@ -49,7 +49,7 @@ func (d *Database) Count() int {
 
 func (d *Database) InsertAccountByFields(name string, email string, key string, hash string, interval int, acct_type string) {
   account_uuid := uuid.New().String();
-  var acct Account = Account{ Name: name, Email: email, Key: key, Hash: hash, Interval: interval, Type: acct_type, Uuid: account_uuid }
+  var acct Account = Account{ Name: name, Email: email, Key: key, Algorithm: hash, Interval: interval, Type: acct_type, Uuid: account_uuid }
 
   d.Accounts = append(d.Accounts, acct);
 }
