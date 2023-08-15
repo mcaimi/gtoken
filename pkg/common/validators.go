@@ -1,10 +1,10 @@
-package gtoken
+package common
 
 import (
-	"fmt"
-	"regexp"
-	"strconv"
-	"strings"
+  "fmt"
+  "regexp"
+  "strconv"
+  "strings"
 )
 
 const (
@@ -14,31 +14,7 @@ const (
   emailRegex string = "^(\\w\\.?)+@[\\w\\.-]+\\.\\w{2,}$"
 )
 
-const (
-  account_name int = iota;
-  email;
-  totp_key;
-  totp_algo;
-  totp_interval;
-  totp_flavor;
-  totp_type;
-  totp_uuid;
-)
-
-type tokenObject struct {
-  entry_uuid string;
-  account_name string;
-  email string;
-  totp_algo string;
-  totp_flavor string;
-  totp_interval int;
-  totp_type string;
-  totp_uuid string;
-  token string;
-  seed string;
-}
-
-func stringNotZeroLen(s string) bool {
+func StringNotZeroLen(s string) bool {
   if len(s) == 0 {
     return false;
   }
@@ -46,12 +22,12 @@ func stringNotZeroLen(s string) bool {
   return true;
 }
 
-func validateIntegerInput(s string) error {
+func ValidateIntegerInput(s string) error {
   _, err := strconv.ParseInt(s, 10, inputLength);
   return err;
 }
 
-func validateEmailInput(s string) error { 
+func ValidateEmailInput(s string) error { 
   emailMatcher := regexp.MustCompile(emailRegex);
 
   if ! emailMatcher.MatchString(s) {
@@ -61,7 +37,7 @@ func validateEmailInput(s string) error {
   return nil;
 }
 
-func validateAlgorithmInput(s string) error {
+func ValidateAlgorithmInput(s string) error {
   var supportedAlgos []string = []string{ "md5", "sha1", "sha256", "sha512" }
 
   for i := range supportedAlgos {
@@ -73,7 +49,7 @@ func validateAlgorithmInput(s string) error {
   return fmt.Errorf("Hashing Algorithm is not currently supported.");
 }
 
-func validateFlavor(s string) error {
+func ValidateFlavor(s string) error {
   var supportedFlavors []string = []string{ "google", "rfc" }
 
   for i := range supportedFlavors {

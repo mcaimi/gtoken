@@ -1,4 +1,4 @@
-package gtoken
+package account
 
 import (
 	"github.com/mcaimi/gtoken/pkg/common"

@@ -1,4 +1,4 @@
-package gtoken
+package account
 
 import (
 	"fmt"
@@ -7,20 +7,20 @@ import (
 	"github.com/mcaimi/gtoken/pkg/gtoken"
 )
 
-func ValidateToken(newToken tokenObject) error {
+func ValidateToken(newToken gtoken.Account) error {
   var err error;
   // validate input
-  if err = validateEmailInput(newToken.email); err != nil {
+  if err = common.ValidateEmailInput(newToken.Email); err != nil {
     return err;
   }
-  if err = validateAlgorithmInput(newToken.totp_algo); err != nil {
+  if err = common.ValidateAlgorithmInput(newToken.Algorithm); err != nil {
     return err;
   }
-  if err = validateFlavor(newToken.totp_flavor); err != nil {
+  if err = common.ValidateFlavor(newToken.Flavor); err != nil {
     return err;
   }
   // validate string lengths
-  inputStringOk := stringNotZeroLen(newToken.token) && stringNotZeroLen(newToken.account_name)
+  inputStringOk := common.StringNotZeroLen(newToken.Token) && common.StringNotZeroLen(newToken.Name)
   if !inputStringOk {
     return fmt.Errorf("Token Seed and Account Name cannot be empty");
   }
@@ -28,17 +28,17 @@ func ValidateToken(newToken tokenObject) error {
   return nil;
 }
 
-func InsertToken(newToken tokenObject) error {
+func InsertToken(newToken gtoken.Account) error {
   // Build Account object
   var acct gtoken.Account;
   acct = gtoken.Account{
-    Name: newToken.account_name,
-    Email: newToken.email,
-    Key: newToken.token,
-    Hash: newToken.totp_algo, 
-    Interval: newToken.totp_interval,
-    Flavor: newToken.totp_flavor,
-    Type: newToken.totp_type,
+    Name: newToken.Name,
+    Email: newToken.Email,
+    Key: newToken.Token,
+    Algorithm: newToken.Algorithm, 
+    Interval: newToken.Interval,
+    Flavor: newToken.Flavor,
+    Type: newToken.Type,
   }
 
   // write account data to the database on disk

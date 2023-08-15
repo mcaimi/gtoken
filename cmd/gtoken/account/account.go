@@ -1,10 +1,12 @@
-package gtoken
+package account
 
 import (
   "os"
   "fmt"
   "github.com/spf13/cobra"
 
+  "github.com/mcaimi/gtoken/pkg/gtoken"
+  "github.com/mcaimi/gtoken/pkg/common"
   "github.com/jedib0t/go-pretty/v6/table"
 )
 
@@ -17,7 +19,7 @@ var (
 )
 
 var (
-  accountCmd = &cobra.Command {
+  AccountCmd = &cobra.Command {
     Use: "account [verb]",
     Short: "Manage OTP Accounts",
     Long: "Manage the OTP Account database. Add, Remove or Update OTP Account Entries.",
@@ -32,14 +34,14 @@ var (
     Aliases: []string{"l", "ls"},
     Run: func(cmd *cobra.Command, args []string) {
       // load tokens
-      var tokens []tokenObject;
+      var tokens []gtoken.Account;
       var tokenError error;
 
       // flags
       var accountUUID string;
       var showSeed bool;
       accountUUID, _ = cmd.Flags().GetString("show-seed");
-      showSeed = stringNotZeroLen(accountUUID);
+      showSeed = common.StringNotZeroLen(accountUUID);
 
       tokens, tokenError = GenerateTokens();
       if tokenError != nil {
@@ -54,22 +56,22 @@ var (
         tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Type", "Flavor"});
         for item := range tokens {
           tbl.AppendRow(table.Row{
-            tokens[item].entry_uuid,
-            tokens[item].account_name,
-            tokens[item].email,
-            tokens[item].totp_type,
-            tokens[item].totp_flavor,
+            tokens[item].Uuid,
+            tokens[item].Name,
+            tokens[item].Email,
+            tokens[item].Type,
+            tokens[item].Flavor,
           });
         }
       } else {
         tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Seed"});
         for item := range tokens {
-          if tokens[item].entry_uuid == accountUUID {
+          if tokens[item].Uuid == accountUUID {
           tbl.AppendRow(table.Row{
-              tokens[item].entry_uuid,
-              tokens[item].account_name,
-              tokens[item].email,
-              tokens[item].seed,
+              tokens[item].Uuid,
+              tokens[item].Name,
+              tokens[item].Email,
+              tokens[item].Key,
             });
           }
         }
@@ -88,7 +90,7 @@ var (
     Aliases: []string{"g", "gen"},
     Run: func(cmd *cobra.Command, args []string) {
       // load tokens
-      var tokens []tokenObject;
+      var tokens []gtoken.Account;
       var tokenError error;
 
       tokens, tokenError = GenerateTokens();
@@ -102,10 +104,10 @@ var (
       tbl.AppendHeader(table.Row{"Account Name", "E-Mail Address", "Interval", "Token Value"});
       for item := range tokens {
         tbl.AppendRow(table.Row{
-          tokens[item].account_name,
-          tokens[item].email,
-          tokens[item].totp_interval,
-          tokens[item].token,
+          tokens[item].Name,
+          tokens[item].Email,
+          tokens[item].Interval,
+          tokens[item].Token,
         });
       }
       tbl.Render();
@@ -131,7 +133,7 @@ var (
       interval, _ := cmd.Flags().GetInt("interval");
 
       // fill data into the new token object
-      newAccount := tokenObject{account_name: name, email: email, totp_type: tok_type, totp_flavor: tok_flavor, totp_algo: tok_algo, token: tok_seed, totp_interval: interval};
+      newAccount := gtoken.Account{Name: name, Email: email, Type: tok_type, Flavor: tok_flavor, Algorithm: tok_algo, Token: tok_seed, Interval: interval};
       if err := ValidateToken(newAccount); err != nil {
         fmt.Printf("Token Insert Error: %s\n", err);
         os.Exit(1);
@@ -148,12 +150,12 @@ var (
       tbl.SetOutputMirror(os.Stdout);
       tbl.AppendHeader(table.Row{"Account Name", "E-Mail Address", "Type", "Flavor", "Validity", "Token"});
       tbl.AppendRow(table.Row{
-          newAccount.account_name,
-          newAccount.email,
-          newAccount.totp_type,
-          newAccount.totp_flavor,
-          newAccount.totp_interval,
-          newAccount.token,
+          newAccount.Name,
+          newAccount.Email,
+          newAccount.Type,
+          newAccount.Flavor,
+          newAccount.Interval,
+          newAccount.Token,
         });
       tbl.Render();
 
@@ -170,7 +172,7 @@ var (
     Run: func(cmd *cobra.Command, args []string) {
       // parse flags
       uuid, _ := cmd.Flags().GetString("uuid");
-      if ! stringNotZeroLen(uuid) {
+      if ! common.StringNotZeroLen(uuid) {
         fmt.Println("Please specify a valid UUID");
         os.Exit(1);
       }
@@ -204,10 +206,9 @@ func init() {
   removeCmd.Flags().StringP("uuid", "u", "", "The UUID of the account that needs to be deleted from the Account DB");
 
   // build command
-  accountCmd.AddCommand(listCmd);
-  accountCmd.AddCommand(insertCmd);
-  accountCmd.AddCommand(generateCmd);
-  accountCmd.AddCommand(removeCmd);
-  rootCommand.AddCommand(accountCmd);
+  AccountCmd.AddCommand(listCmd);
+  AccountCmd.AddCommand(insertCmd);
+  AccountCmd.AddCommand(generateCmd);
+  AccountCmd.AddCommand(removeCmd);
 }
 

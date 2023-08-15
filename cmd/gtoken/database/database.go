@@ -1,4 +1,4 @@
-package gtoken
+package database
 
 import (
   "os"
@@ -10,14 +10,14 @@ import (
 )
 
 var (
-  databaseCommand = &cobra.Command{
+  DatabaseCmd = &cobra.Command{
     Use: "database",
     Short: "Manage the Account Database",
     Long: "Family of commands that allows for Database maintenance and other operations",
     Aliases: []string{"d", "db"},
   }
 
-  statusCommand = &cobra.Command{
+  statusCmd = &cobra.Command{
     Use: "status",
     Short: "Show status",
     Long: "Show information about the Account Database",
@@ -42,6 +42,5 @@ var (
 )
 
 func init() {
-  databaseCommand.AddCommand(statusCommand);
-  rootCommand.AddCommand(databaseCommand);
+  DatabaseCmd.AddCommand(statusCmd);
 }

@@ -1,4 +1,4 @@
-package gtoken
+package account
 
 import (
   "github.com/mcaimi/gtoken/pkg/gtoken"
@@ -7,9 +7,9 @@ import (
   "github.com/mcaimi/go-totp/rfc6238"
 )
 
-func GenerateTokens() ([]tokenObject, error) {
+func GenerateTokens() ([]gtoken.Account, error) {
   var acctDb gtoken.Database;
-  var rows []tokenObject;
+  var rows []gtoken.Account;
 
   // Read database contents from disk
   accountFile, err := common.GetAccountsDB();
@@ -23,7 +23,7 @@ func GenerateTokens() ([]tokenObject, error) {
 
   var a gtoken.Account;
   var n int = acctDb.Count();
-  rows = make([]tokenObject, n);
+  rows = make([]gtoken.Account, n);
   for i := range acctDb.Accounts {
     a = acctDb.Accounts[i];
 
@@ -36,7 +36,8 @@ func GenerateTokens() ([]tokenObject, error) {
     }
 
     // update table data
-    rows[i] = tokenObject{a.Uuid, a.Name, a.Email, a.Hash, a.Flavor, a.Interval, a.Type, a.Uuid, token, a.Key};
+    rows[i] = gtoken.Account{a.Uuid, a.Name, a.Email, a.Algorithm, a.Flavor, a.Interval, a.Type,
+    a.Key, token};
   }
 
   return rows, nil;
