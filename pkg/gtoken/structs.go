@@ -25,5 +25,6 @@ type Account struct {
 }
 
 type Database struct {
+  DbFilePath string;
   Accounts []Account `json:"accounts"`;
 }

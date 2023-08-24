@@ -1,9 +1,11 @@
 package gtoken
 
 import (
-  "os"
-  "encoding/json"
-  "github.com/google/uuid"
+	"encoding/json"
+	"os"
+
+	"github.com/google/uuid"
+	"github.com/mcaimi/gtoken/pkg/common"
 )
 
 func OpenAccountDB(fileName string) (Database, error) {
@@ -114,4 +116,26 @@ func (d *Database) WriteAccountsDB(fileName string) error {
   accountDescriptor.Sync();
 
   return nil;
+}
+
+// convenience function: open and returns the local default database
+func ReadAccountDb() (Database, error) {
+  var dbPath string;
+  var db Database;
+  var e error;
+
+  // get default db path
+  if dbPath, e = common.GetAccountsDB(); e == nil {
+    // open and return database
+    if db, e = OpenAccountDB(dbPath); e == nil {
+      // set db file name
+      db.DbFilePath = dbPath;
+      // return database object
+      return db, nil;
+    } else {
+      return Database{}, e;
+    }
+  } else {
+    return Database{}, e;
+  }
 }
