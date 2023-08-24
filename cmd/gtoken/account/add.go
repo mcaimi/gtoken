@@ -42,16 +42,12 @@ func InsertToken(newToken gtoken.Account) error {
   }
 
   // write account data to the database on disk
-  accountFile, err := common.GetAccountsDB();
-  if err != nil {
-    return err;
-  }
-  acctDb, err := gtoken.OpenAccountDB(accountFile);
+  acctDb, err := gtoken.ReadAccountDb();
   if err != nil {
     return err;
   }
   acctDb.InsertAccount(acct);
-  acctDb.WriteAccountsDB(accountFile);
+  acctDb.WriteAccountsDB(acctDb.DbFilePath);
 
   return nil;
 }

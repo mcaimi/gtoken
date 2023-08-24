@@ -1,22 +1,17 @@
 package account
 
 import (
-	"github.com/mcaimi/gtoken/pkg/common"
-	"github.com/mcaimi/gtoken/pkg/gtoken"
+  "github.com/mcaimi/gtoken/pkg/gtoken"
 )
 
 func RemoveToken(tokenUuid string) error {
   // Remove entry from the DB
-  accountFile, err := common.GetAccountsDB();
-  if err != nil {
-    return err;
-  }
-  acctDb, err := gtoken.OpenAccountDB(accountFile);
+  acctDb, err := gtoken.ReadAccountDb();
   if err != nil {
     return err;
   }
   acctDb.DeleteAccount(tokenUuid);
-  acctDb.WriteAccountsDB(accountFile);
+  acctDb.WriteAccountsDB(acctDb.DbFilePath);
 
   return nil;
 }

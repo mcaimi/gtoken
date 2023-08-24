@@ -7,6 +7,7 @@ import (
 
   "github.com/mcaimi/gtoken/pkg/gtoken"
   "github.com/mcaimi/gtoken/pkg/common"
+  "github.com/mcaimi/gtoken/cmd/gtoken/styles"
   "github.com/jedib0t/go-pretty/v6/table"
 )
 
@@ -51,6 +52,7 @@ var (
       // Display Tokens
       tbl := table.NewWriter();
       tbl.SetOutputMirror(os.Stdout);
+      tbl.SetStyle(styles.GetStyle());
 
       if ! showSeed {
         tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Type", "Flavor"});
@@ -101,6 +103,8 @@ var (
       // Display Tokens
       tbl := table.NewWriter();
       tbl.SetOutputMirror(os.Stdout);
+      tbl.SetStyle(styles.GetStyle());
+
       tbl.AppendHeader(table.Row{"Account Name", "E-Mail Address", "Interval", "Token Value"});
       for item := range tokens {
         tbl.AppendRow(table.Row{
@@ -148,6 +152,8 @@ var (
       // display newly inserted token
       tbl := table.NewWriter();
       tbl.SetOutputMirror(os.Stdout);
+      tbl.SetStyle(styles.GetStyle());
+
       tbl.AppendHeader(table.Row{"Account Name", "E-Mail Address", "Type", "Flavor", "Validity", "Token"});
       tbl.AppendRow(table.Row{
           newAccount.Name,

@@ -2,8 +2,6 @@ package account
 
 import (
   "github.com/mcaimi/gtoken/pkg/gtoken"
-  "github.com/mcaimi/gtoken/pkg/common"
-
   "github.com/mcaimi/go-totp/rfc6238"
 )
 
@@ -11,12 +9,7 @@ func GenerateTokens() ([]gtoken.Account, error) {
   var acctDb gtoken.Database;
   var rows []gtoken.Account;
 
-  // Read database contents from disk
-  accountFile, err := common.GetAccountsDB();
-  if err != nil {
-    return nil, err;
-  }
-  acctDb, err = gtoken.OpenAccountDB(accountFile);
+  acctDb, err := gtoken.ReadAccountDb();
   if err != nil {
     return nil, err;
   }
@@ -36,8 +29,7 @@ func GenerateTokens() ([]gtoken.Account, error) {
     }
 
     // update table data
-    rows[i] = gtoken.Account{a.Uuid, a.Name, a.Email, a.Algorithm, a.Flavor, a.Interval, a.Type,
-    a.Key, token};
+    rows[i] = gtoken.Account{a.Uuid, a.Name, a.Email, a.Algorithm, a.Flavor, a.Interval, a.Type, a.Key, token};
   }
 
   return rows, nil;
