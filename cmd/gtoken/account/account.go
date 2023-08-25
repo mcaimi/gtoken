@@ -5,7 +5,7 @@ import (
   "fmt"
   "github.com/spf13/cobra"
 
-  "github.com/mcaimi/gtoken/pkg/gtoken"
+  "github.com/mcaimi/gtoken/pkg/token_io"
   "github.com/mcaimi/gtoken/pkg/common"
   "github.com/mcaimi/gtoken/cmd/gtoken/styles"
   "github.com/jedib0t/go-pretty/v6/table"
@@ -15,7 +15,7 @@ var (
   name string
   key string
   hash string
-  interval int
+  interval int64
   token_type string
 )
 
@@ -35,7 +35,7 @@ var (
     Aliases: []string{"l", "ls"},
     Run: func(cmd *cobra.Command, args []string) {
       // load tokens
-      var tokens []gtoken.Account;
+      var tokens []token_io.Account;
       var tokenError error;
 
       // flags
@@ -58,7 +58,7 @@ var (
         tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Type", "Flavor"});
         for item := range tokens {
           tbl.AppendRow(table.Row{
-            tokens[item].Uuid,
+            tokens[item].UUID,
             tokens[item].Name,
             tokens[item].Email,
             tokens[item].Type,
@@ -68,9 +68,9 @@ var (
       } else {
         tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Seed"});
         for item := range tokens {
-          if tokens[item].Uuid == accountUUID {
+          if tokens[item].UUID == accountUUID {
           tbl.AppendRow(table.Row{
-              tokens[item].Uuid,
+              tokens[item].UUID,
               tokens[item].Name,
               tokens[item].Email,
               tokens[item].Key,
@@ -92,7 +92,7 @@ var (
     Aliases: []string{"g", "gen"},
     Run: func(cmd *cobra.Command, args []string) {
       // load tokens
-      var tokens []gtoken.Account;
+      var tokens []token_io.Account;
       var tokenError error;
 
       tokens, tokenError = GenerateTokens();
@@ -134,10 +134,10 @@ var (
       tok_flavor, _ := cmd.Flags().GetString("flavor");
       tok_seed, _ := cmd.Flags().GetString("seed");
       tok_algo, _ := cmd.Flags().GetString("algorithm");
-      interval, _ := cmd.Flags().GetInt("interval");
+      interval, _ := cmd.Flags().GetInt64("interval");
 
       // fill data into the new token object
-      newAccount := gtoken.Account{Name: name, Email: email, Type: tok_type, Flavor: tok_flavor, Algorithm: tok_algo, Token: tok_seed, Interval: interval};
+      newAccount := token_io.Account{Name: name, Email: email, Type: tok_type, Flavor: tok_flavor, Algorithm: tok_algo, Token: tok_seed, Interval: interval};
       if err := ValidateToken(newAccount); err != nil {
         fmt.Printf("Token Insert Error: %s\n", err);
         os.Exit(1);
@@ -202,7 +202,7 @@ func init() {
   insertCmd.Flags().StringP("type", "t", "totp", "Specify The Account Name");
   insertCmd.Flags().StringP("flavor", "f", "google", "Two Factor Flavor (Google or RFC)");
   insertCmd.Flags().StringP("algorithm", "a", "sha1", "Token Hash Function");
-  insertCmd.Flags().IntP("interval", "i", 30, "Token Refresh Interval (seconds)");
+  insertCmd.Flags().Int64P("interval", "i", 30, "Token Refresh Interval (seconds)");
   insertCmd.Flags().StringP("seed", "s", "", "Token Secret Seed");
 
   // define flags (list cmd)

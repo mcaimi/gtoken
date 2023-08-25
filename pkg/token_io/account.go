@@ -1,4 +1,4 @@
-package gtoken
+package token_io
 
 import (
 	"encoding/json"
@@ -49,15 +49,15 @@ func (d *Database) Count() int {
   return acctNum;
 }
 
-func (d *Database) InsertAccountByFields(name string, email string, key string, hash string, interval int, acct_type string) {
+func (d *Database) InsertAccountByFields(name string, email string, key string, hash string, interval int64, acct_type string) {
   account_uuid := uuid.New().String();
-  var acct Account = Account{ Name: name, Email: email, Key: key, Algorithm: hash, Interval: interval, Type: acct_type, Uuid: account_uuid }
+  var acct Account = Account{ Name: name, Email: email, Key: key, Algorithm: hash, Interval: interval, Type: acct_type, UUID: account_uuid }
 
   d.Accounts = append(d.Accounts, acct);
 }
 
 func (d *Database) InsertAccount(acct Account) {
-  acct.Uuid = uuid.New().String();
+  acct.UUID = uuid.New().String();
   d.Accounts = append(d.Accounts, acct);
 }
 
@@ -67,7 +67,7 @@ func (d *Database) DeleteAccount(accountUuid string) {
   if acct != nil {
     var updatedDb []Account;
     for i := range(d.Accounts) {
-      if d.Accounts[i].Uuid != acct.Uuid {
+      if d.Accounts[i].UUID != acct.UUID {
         updatedDb = append(updatedDb, d.Accounts[i]);
       }
     }
@@ -84,7 +84,7 @@ func (d *Database) SearchAccount(accountUuid string) *Account {
 
   // search for account in the database
   for i := range(d.Accounts) {
-    if d.Accounts[i].Uuid == accountUuid {
+    if d.Accounts[i].UUID == accountUuid {
       return &d.Accounts[i]
     }
   }

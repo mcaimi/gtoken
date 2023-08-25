@@ -5,7 +5,7 @@ import (
   "fmt"
 
   "github.com/spf13/cobra"
-  "github.com/mcaimi/gtoken/pkg/gtoken"
+  "github.com/mcaimi/gtoken/pkg/token_io"
   "github.com/mcaimi/gtoken/cmd/gtoken/styles"
   "github.com/jedib0t/go-pretty/v6/table"
 )
@@ -24,10 +24,10 @@ var (
     Long: "Show information about the Account Database",
     Aliases: []string{"s", "stat", "info", "show"},
     Run: func(cmd *cobra.Command, args []string) {
-      var d gtoken.Database;
+      var d token_io.Database;
       var err error;
 
-      if d, err = gtoken.ReadAccountDb(); err != nil {
+      if d, err = token_io.ReadAccountDb(); err != nil {
         fmt.Printf("gtoken status error: [%s]\n", err);
         os.Exit(1);
       }

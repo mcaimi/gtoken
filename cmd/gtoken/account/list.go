@@ -1,22 +1,22 @@
 package account
 
 import (
-  "github.com/mcaimi/gtoken/pkg/gtoken"
-  "github.com/mcaimi/go-totp/rfc6238"
+	"github.com/mcaimi/go-totp/rfc6238"
+	"github.com/mcaimi/gtoken/pkg/token_io"
 )
 
-func GenerateTokens() ([]gtoken.Account, error) {
-  var acctDb gtoken.Database;
-  var rows []gtoken.Account;
+func GenerateTokens() ([]token_io.Account, error) {
+  var acctDb token_io.Database;
+  var rows []token_io.Account;
 
-  acctDb, err := gtoken.ReadAccountDb();
+  acctDb, err := token_io.ReadAccountDb();
   if err != nil {
     return nil, err;
   }
 
-  var a gtoken.Account;
+  var a token_io.Account;
   var n int = acctDb.Count();
-  rows = make([]gtoken.Account, n);
+  rows = make([]token_io.Account, n);
   for i := range acctDb.Accounts {
     a = acctDb.Accounts[i];
 
@@ -29,7 +29,15 @@ func GenerateTokens() ([]gtoken.Account, error) {
     }
 
     // update table data
-    rows[i] = gtoken.Account{a.Uuid, a.Name, a.Email, a.Algorithm, a.Flavor, a.Interval, a.Type, a.Key, token};
+    rows[i] = token_io.Account{UUID: a.UUID,
+      Name: a.Name,
+      Email: a.Email,
+      Algorithm: a.Algorithm,
+      Flavor: a.Flavor,
+      Interval: a.Interval,
+      Type: a.Type,
+      Key: a.Key,
+      Token: token};
   }
 
   return rows, nil;

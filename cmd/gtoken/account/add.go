@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/mcaimi/gtoken/pkg/common"
-	"github.com/mcaimi/gtoken/pkg/gtoken"
+	"github.com/mcaimi/gtoken/pkg/token_io"
 )
 
-func ValidateToken(newToken gtoken.Account) error {
+func ValidateToken(newToken token_io.Account) error {
   var err error;
   // validate input
   if err = common.ValidateEmailInput(newToken.Email); err != nil {
@@ -28,10 +28,10 @@ func ValidateToken(newToken gtoken.Account) error {
   return nil;
 }
 
-func InsertToken(newToken gtoken.Account) error {
+func InsertToken(newToken token_io.Account) error {
   // Build Account object
-  var acct gtoken.Account;
-  acct = gtoken.Account{
+  var acct token_io.Account;
+  acct = token_io.Account{
     Name: newToken.Name,
     Email: newToken.Email,
     Key: newToken.Token,
@@ -42,7 +42,7 @@ func InsertToken(newToken gtoken.Account) error {
   }
 
   // write account data to the database on disk
-  acctDb, err := gtoken.ReadAccountDb();
+  acctDb, err := token_io.ReadAccountDb();
   if err != nil {
     return err;
   }
