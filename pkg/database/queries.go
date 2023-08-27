@@ -1,0 +1,27 @@
+package database
+
+import "fmt"
+
+// general constants
+var (
+  SCHEMA_VERSION string = "1.0"
+)
+
+// database queries and related constants
+var (
+  METADATA_TABLE string = "Metadata"
+  TOKEN_ENTITIES_TABLE string = "TokenEntities"
+
+  METADATA_INIT string = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s ( VERSION TEXT, ENTRIES INTEGER, CHECKSUM TEXT );", METADATA_TABLE);
+  METADATA_ALL string = fmt.Sprintf("SELECT * FROM %s", METADATA_TABLE);
+  METADATA_INSERT = fmt.Sprintf("INSERT INTO %s (VERSION, ENTRIES, CHECKSUM) VALUES (?, ?, ?)", METADATA_TABLE);
+  METADATA_UPDATE = fmt.Sprintf("UPDATE %s SET VERSION = ?, ENTRIES = ?, CHECKSUM = ? WHERE VERSION = ?", METADATA_TABLE);
+
+  DB_INIT string = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s ( UUID TEXT PRIMARY KEY, NAME TEXT, EMAIL TEXT, ALGORITHM TEXT, FLAVOR TEXT, INTERVAL INTEGER, TYPE TEXT, KEY TEXT NOT NULL, PERIOD INTEGER );", TOKEN_ENTITIES_TABLE);
+  ROW_INSERT string = fmt.Sprintf("INSERT INTO %s (UUID, NAME, EMAIL, ALGORITHM, FLAVOR, INTERVAL, TYPE, KEY, PERIOD) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", TOKEN_ENTITIES_TABLE);
+  ROW_UPDATE string = fmt.Sprintf("UPDATE %s SET NAME = ?, ALGORITHM = ?, FLAVOR = ?, INTERVAL = ?, TYPE = ?, KEY = ?, PERIOD = ? WHERE UUID = ?", TOKEN_ENTITIES_TABLE);
+  ROW_DELETE string = fmt.Sprintf("DELETE FROM %s WHERE UUID = ?", TOKEN_ENTITIES_TABLE);
+  SEARCH_BY_UUID string = fmt.Sprintf("SELECT FROM %s WHERE UUID = ?", TOKEN_ENTITIES_TABLE);
+  SELECT_ALL string = fmt.Sprintf("SELECT * FROM %s", TOKEN_ENTITIES_TABLE);
+  COUNT string = "SELECT COUNT(*) FROM %s";
+)

@@ -11,6 +11,8 @@ github.com/jedib0t/go-pretty/v6 v6.4.6/go.mod h1:Ndk3ase2CkQbXLLNf5QDHoYb6J9WtVf
 github.com/mattn/go-runewidth v0.0.13/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
 github.com/mattn/go-runewidth v0.0.14 h1:+xnbZSEeDbOIg5/mE6JF0w6n9duR1l3/WmbinWVwUuU=
 github.com/mattn/go-runewidth v0.0.14/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
+github.com/mattn/go-sqlite3 v1.14.17 h1:mCRHCLDUBXgpKAqIKsaAaAsrAlbkeomtRFKXh2L6YIM=
+github.com/mattn/go-sqlite3 v1.14.17/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
 github.com/mcaimi/go-hmac v0.0.0-20230322104258-6578e084923c h1:d1wkU6jWuT4QxePJ5b6lbRSChltDh6ON3T/WrDCTKMA=
 github.com/mcaimi/go-hmac v0.0.0-20230322104258-6578e084923c/go.mod h1:BQoJ9pfELxClLK+d6YXZHfeyi6M7DROiU7SQl2r3HnQ=
 github.com/mcaimi/go-hotp v0.0.0-20230324080742-259cbb77f0e6 h1:afc7YHEm7Sc7S4VhWsjcBCgPwEwpVOqsLFzNJvYPxyE=

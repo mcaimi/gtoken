@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/google/uuid v1.3.0
 	github.com/jedib0t/go-pretty/v6 v6.4.6
+	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/mcaimi/go-totp v0.0.0-20230328103202-f959d7bdb83c
 	github.com/spf13/cobra v1.6.1
 )
