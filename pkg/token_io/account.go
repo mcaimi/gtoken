@@ -3,12 +3,14 @@ package token_io
 import (
 	"encoding/json"
 	"os"
+  "errors"
 
 	"github.com/google/uuid"
 	"github.com/mcaimi/gtoken/pkg/common"
+  "github.com/mcaimi/gtoken/pkg/database"
 )
 
-func OpenAccountDB(fileName string) (Database, error) {
+func JsonOpen(fileName string) (Database, error) {
   var accountDescriptor *os.File;
   var err error;
 
@@ -26,7 +28,7 @@ func OpenAccountDB(fileName string) (Database, error) {
     return Database{}, err;
   }
   fileContents = make([]byte, fileInfo.Size());
-  
+
   var accountsDb Database;
   _, err = accountDescriptor.Read(fileContents);
 
@@ -40,98 +42,140 @@ func OpenAccountDB(fileName string) (Database, error) {
   return accountsDb, nil;
 }
 
-func (d *Database) Count() int {
-  var acctNum int = 0;
-  for range d.Accounts {
-    acctNum += 1;
-  }
-
-  return acctNum;
-}
-
-func (d *Database) InsertAccountByFields(name string, email string, key string, hash string, interval int64, acct_type string) {
-  account_uuid := uuid.New().String();
-  var acct Account = Account{ Name: name, Email: email, Key: key, Algorithm: hash, Interval: interval, Type: acct_type, UUID: account_uuid }
-
-  d.Accounts = append(d.Accounts, acct);
-}
-
-func (d *Database) InsertAccount(acct Account) {
-  acct.UUID = uuid.New().String();
-  d.Accounts = append(d.Accounts, acct);
-}
-
-func (d *Database) DeleteAccount(accountUuid string) {
-  // make sure that account exists
-  var acct *Account = d.SearchAccount(accountUuid);
-  if acct != nil {
-    var updatedDb []Account;
-    for i := range(d.Accounts) {
-      if d.Accounts[i].UUID != acct.UUID {
-        updatedDb = append(updatedDb, d.Accounts[i]);
-      }
-    }
-    // swap databases
-    d.Accounts = updatedDb;
-  }
-}
-
-func (d *Database) SearchAccount(accountUuid string) *Account {
-  if d.Count() == 0 {
-    // empty db
-    return nil;
-  }
-
-  // search for account in the database
-  for i := range(d.Accounts) {
-    if d.Accounts[i].UUID == accountUuid {
-      return &d.Accounts[i]
-    }
-  }
-
-  // account is not in the DB
-  return nil
-}
-
-func (d *Database) WriteAccountsDB(fileName string) error {
-  var accountDescriptor *os.File;
-  var err error;
-
-  // open new file
-  accountDescriptor, err = os.OpenFile(fileName, os.O_TRUNC|os.O_RDWR|os.O_CREATE, 0700);
-  if err != nil {
-    return err;
-  }
-  defer accountDescriptor.Close();
-
-  // marshal json db and write to the disk
-  var dbContents []byte;
-  dbContents, err = json.Marshal(d);
-  if err != nil {
-    return err;
-  }
-
-  accountDescriptor.Seek(0,0);
-  accountDescriptor.Write(dbContents);
-  accountDescriptor.Sync();
-
-  return nil;
-}
-
-// convenience function: open and returns the local default database
-func ReadAccountDb() (Database, error) {
+func InitDB() error {
   var dbPath string;
-  var db Database;
+  var db *database.SqliteDatabase;
   var e error;
 
   // get default db path
   if dbPath, e = common.GetAccountsDB(); e == nil {
     // open and return database
-    if db, e = OpenAccountDB(dbPath); e == nil {
-      // set db file name
-      db.DbFilePath = dbPath;
+    if db, e = database.NewDB(dbPath); e == nil {
+      defer db.CloseDB();
+      // search entries
+      if e = db.DoInit(); e != nil {
+        return e;
+      }
       // return database object
-      return db, nil;
+      return nil;
+    }
+  }
+  return nil;
+}
+
+func InsertAccount(acct database.TokenEntity) error {
+  // compute new UUID
+  acct.UUID = uuid.New().String();
+  var dbPath string;
+  var db *database.SqliteDatabase;
+  var e error;
+
+  // get default db path
+  if dbPath, e = common.GetAccountsDB(); e == nil {
+    // open and return database
+    if db, e = database.NewDB(dbPath); e == nil {
+      defer db.CloseDB();
+      // search entries
+      if e = db.InsertRow(acct); e != nil {
+        return e;
+      }
+      // return database object
+      return nil;
+    }
+  }
+  return nil;
+}
+
+func InsertAccountByFields(name string, email string, key string, hash string, interval int64, acct_type string) error {
+  account_uuid := uuid.New().String();
+  var acct database.TokenEntity = database.TokenEntity{ Name: name, Email: email, Key: key, Algorithm: hash, Interval: interval, Type: acct_type, UUID: account_uuid }
+
+  // insert account
+  if e := InsertAccount(acct); e != nil {
+    return e;
+  }
+
+  return nil;
+}
+
+func DeleteAccount(accountUuid string) error {
+  var dbPath string;
+  var db *database.SqliteDatabase;
+  var e error;
+
+  // get default db path
+  if dbPath, e = common.GetAccountsDB(); e == nil {
+    // open and return database
+    if db, e = database.NewDB(dbPath); e == nil {
+      defer db.CloseDB();
+      // search entries
+      db.DeleteRow(accountUuid)
+    }
+    return e;
+  }
+  return e;
+}
+
+func SearchAccount(accountUuid string) *database.TokenEntity {
+  var dbPath string;
+  var db *database.SqliteDatabase;
+  var t database.TokenEntity;
+  var e error;
+
+  // get default db path
+  if dbPath, e = common.GetAccountsDB(); e == nil {
+    // open and return database
+    if db, e = database.NewDB(dbPath); e == nil {
+      defer db.CloseDB();
+      // search entries
+      if t, e = db.SearchRow(accountUuid); e != nil {
+        return nil;
+      }
+      // return database object
+      return &t;
+    } else {
+      return nil;
+    }
+  } else {
+    return nil;
+  }
+}
+
+// convenience function: open and returns the local default database
+func ReadAccountDb() (Database, error) {
+  var dbPath string;
+  var db *database.SqliteDatabase;
+  var tokenArray Database;
+  var e error;
+
+  // get default db path
+  if dbPath, e = common.GetAccountsDB(); e == nil {
+    // open and return database
+    if db, e = database.NewDB(dbPath); e == nil {
+      defer db.CloseDB();
+      tokenArray.DbFilePath = dbPath;
+      // load entries
+      if tokenArray.Accounts, e = db.AllRows(); e != nil {
+        return Database{}, e;
+      }
+
+      // Read Metadata
+      if tokenArray.Version, tokenArray.Entries, tokenArray.IntegrityChecksum, e = db.ReadMetadata(); e != nil {
+        return Database{}, e;
+      }
+
+      // Validate integrity
+      var isValid bool;
+      if isValid, e = db.IntegrityCheck(); e != nil {
+        return Database{}, e;
+      }
+
+      if !isValid {
+        return Database{}, errors.New("Database integrity check failed. Db may be corrupted\n");
+      }
+
+      // return database object
+      return tokenArray, nil;
     } else {
       return Database{}, e;
     }
@@ -139,3 +183,4 @@ func ReadAccountDb() (Database, error) {
     return Database{}, e;
   }
 }
+

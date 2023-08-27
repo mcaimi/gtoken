@@ -14,9 +14,10 @@ const (
   totp_computed_value;
 )
 
-type Account database.TokenEntity;
-
 type Database struct {
+  Version string;
+  Entries int;
+  IntegrityChecksum string;
   DbFilePath string;
-  Accounts []Account `json:"accounts"`;
+  Accounts []database.TokenEntity `json:"accounts"`;
 }
