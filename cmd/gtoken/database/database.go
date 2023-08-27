@@ -18,6 +18,19 @@ var (
     Aliases: []string{"d", "db"},
   }
 
+  initCmd = &cobra.Command{
+    Use: "init",
+    Short: "Initialize a new database",
+    Long: "First time database setup, in which the relevant tables are created in a new db file.",
+    Aliases: []string{"i", "in", "new"},
+    Run: func(cmd *cobra.Command, args []string) {
+      if err := token_io.InitDB(); err != nil {
+        fmt.Printf("gtoken status error: [%s]\n", err);
+        os.Exit(1);
+      }
+    },
+  }
+
   statusCmd = &cobra.Command{
     Use: "status",
     Short: "Show status",
@@ -36,8 +49,8 @@ var (
       tbl := table.NewWriter();
       tbl.SetOutputMirror(os.Stdout);
       tbl.SetStyle(styles.GetStyle());
-      tbl.AppendHeader(table.Row{"DB Path", "Entries"});
-      tbl.AppendRow(table.Row{d.DbFilePath, d.Count()});
+      tbl.AppendHeader(table.Row{"DB Path", "Entries", "Schema Version", "DB Checksum"});
+      tbl.AppendRow(table.Row{d.DbFilePath, d.Entries, d.Version, d.IntegrityChecksum});
       tbl.Render();
 
       // ok
@@ -47,5 +60,6 @@ var (
 )
 
 func init() {
+  DatabaseCmd.AddCommand(initCmd);
   DatabaseCmd.AddCommand(statusCmd);
 }

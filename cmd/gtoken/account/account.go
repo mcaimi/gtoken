@@ -5,7 +5,7 @@ import (
   "fmt"
   "github.com/spf13/cobra"
 
-  "github.com/mcaimi/gtoken/pkg/token_io"
+  "github.com/mcaimi/gtoken/pkg/database"
   "github.com/mcaimi/gtoken/pkg/common"
   "github.com/mcaimi/gtoken/cmd/gtoken/styles"
   "github.com/jedib0t/go-pretty/v6/table"
@@ -35,7 +35,7 @@ var (
     Aliases: []string{"l", "ls"},
     Run: func(cmd *cobra.Command, args []string) {
       // load tokens
-      var tokens []token_io.Account;
+      var tokens []database.TokenEntity;
       var tokenError error;
 
       // flags
@@ -92,7 +92,7 @@ var (
     Aliases: []string{"g", "gen"},
     Run: func(cmd *cobra.Command, args []string) {
       // load tokens
-      var tokens []token_io.Account;
+      var tokens []database.TokenEntity;
       var tokenError error;
 
       tokens, tokenError = GenerateTokens();
@@ -137,7 +137,7 @@ var (
       interval, _ := cmd.Flags().GetInt64("interval");
 
       // fill data into the new token object
-      newAccount := token_io.Account{Name: name, Email: email, Type: tok_type, Flavor: tok_flavor, Algorithm: tok_algo, Token: tok_seed, Interval: interval};
+      newAccount := database.TokenEntity{Name: name, Email: email, Type: tok_type, Flavor: tok_flavor, Algorithm: tok_algo, Token: tok_seed, Interval: interval};
       if err := ValidateToken(newAccount); err != nil {
         fmt.Printf("Token Insert Error: %s\n", err);
         os.Exit(1);

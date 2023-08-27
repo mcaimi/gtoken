@@ -3,20 +3,21 @@ package account
 import (
 	"github.com/mcaimi/go-totp/rfc6238"
 	"github.com/mcaimi/gtoken/pkg/token_io"
+	"github.com/mcaimi/gtoken/pkg/database"
 )
 
-func GenerateTokens() ([]token_io.Account, error) {
+func GenerateTokens() ([]database.TokenEntity, error) {
   var acctDb token_io.Database;
-  var rows []token_io.Account;
+  var rows []database.TokenEntity;
 
   acctDb, err := token_io.ReadAccountDb();
   if err != nil {
     return nil, err;
   }
 
-  var a token_io.Account;
-  var n int = acctDb.Count();
-  rows = make([]token_io.Account, n);
+  var a database.TokenEntity;
+  var n int = acctDb.Entries;
+  rows = make([]database.TokenEntity, n);
   for i := range acctDb.Accounts {
     a = acctDb.Accounts[i];
 
@@ -29,7 +30,7 @@ func GenerateTokens() ([]token_io.Account, error) {
     }
 
     // update table data
-    rows[i] = token_io.Account{UUID: a.UUID,
+    rows[i] = database.TokenEntity{UUID: a.UUID,
       Name: a.Name,
       Email: a.Email,
       Algorithm: a.Algorithm,

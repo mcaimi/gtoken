@@ -6,12 +6,9 @@ import (
 
 func RemoveToken(tokenUuid string) error {
   // Remove entry from the DB
-  acctDb, err := token_io.ReadAccountDb();
-  if err != nil {
-    return err;
+  if e := token_io.DeleteAccount(tokenUuid); e != nil {
+    return e;
   }
-  acctDb.DeleteAccount(tokenUuid);
-  acctDb.WriteAccountsDB(acctDb.DbFilePath);
 
   return nil;
 }
