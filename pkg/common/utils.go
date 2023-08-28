@@ -6,6 +6,14 @@ import (
   "strings"
 )
 
+func Ternary[T any](evaluate bool, condition_true, condition_false T) T {
+  if evaluate {
+    return condition_true;
+  }
+
+  return condition_false
+}
+
 func GetConfigPath() (string, error) {
   var configDir string;
   var err error;

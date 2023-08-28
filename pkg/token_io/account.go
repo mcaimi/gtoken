@@ -3,6 +3,7 @@ package token_io
 import (
 	"encoding/json"
 	"os"
+  "fmt"
   "errors"
 
 	"github.com/google/uuid"
@@ -40,6 +41,27 @@ func JsonOpen(fileName string) (Database, error) {
 
   // return data
   return accountsDb, nil;
+}
+
+func ValidateToken(newToken database.TokenEntity) error {
+  var err error;
+  // validate input
+  if err = common.ValidateEmailInput(newToken.Email); err != nil {
+    return err;
+  }
+  if err = common.ValidateAlgorithmInput(newToken.Algorithm); err != nil {
+    return err;
+  }
+  if err = common.ValidateFlavor(newToken.Flavor); err != nil {
+    return err;
+  }
+  // validate string lengths
+  inputStringOk := common.StringNotZeroLen(newToken.Token) && common.StringNotZeroLen(newToken.Name)
+  if !inputStringOk {
+    return fmt.Errorf("Token Seed and Account Name cannot be empty");
+  }
+
+  return nil;
 }
 
 func InitDB() error {
@@ -96,6 +118,41 @@ func InsertAccountByFields(name string, email string, key string, hash string, i
   }
 
   return nil;
+}
+
+func UpdateAccount(accountUuid string, acct database.TokenEntity) error {
+  var dbPath string;
+  var db *database.SqliteDatabase;
+  var e error;
+
+  // get default db path
+  if dbPath, e = common.GetAccountsDB(); e == nil {
+    // open and return database
+    if db, e = database.NewDB(dbPath); e == nil {
+      defer db.CloseDB();
+      // search entry
+      var updatedAccount database.TokenEntity;
+      if updatedAccount, e = db.SearchRow(accountUuid); e != nil {
+        return e;
+      }
+
+      // patch values
+      updatedAccount.Name = common.Ternary(acct.Name != "", acct.Name, updatedAccount.Name);
+      updatedAccount.Email = common.Ternary(acct.Email != "", acct.Email, updatedAccount.Email);
+      updatedAccount.Algorithm = common.Ternary(acct.Algorithm != "", acct.Algorithm, updatedAccount.Algorithm);
+      updatedAccount.Type = common.Ternary(acct.Type != "", acct.Type, updatedAccount.Type);
+      updatedAccount.Flavor = common.Ternary(acct.Flavor != "", acct.Flavor, updatedAccount.Flavor);
+      updatedAccount.Period = common.Ternary(acct.Period != 0, acct.Period, updatedAccount.Period);
+      updatedAccount.Interval = common.Ternary(acct.Interval != 0, acct.Interval, updatedAccount.Interval);
+      updatedAccount.Key = common.Ternary(acct.Key != "", acct.Key, updatedAccount.Key);
+
+      // Update row
+      db.UpdateRow(updatedAccount.UUID, updatedAccount)
+    }
+
+    return e;
+  }
+  return e;
 }
 
 func DeleteAccount(accountUuid string) error {
@@ -172,6 +229,8 @@ func ReadAccountDb() (Database, error) {
 
       if !isValid {
         return Database{}, errors.New("Database integrity check failed. Db may be corrupted\n");
+      } else {
+        tokenArray.IsValid = true;
       }
 
       // return database object

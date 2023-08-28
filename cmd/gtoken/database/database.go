@@ -49,8 +49,8 @@ var (
       tbl := table.NewWriter();
       tbl.SetOutputMirror(os.Stdout);
       tbl.SetStyle(styles.GetStyle());
-      tbl.AppendHeader(table.Row{"DB Path", "Entries", "Schema Version", "DB Checksum"});
-      tbl.AppendRow(table.Row{d.DbFilePath, d.Entries, d.Version, d.IntegrityChecksum});
+      tbl.AppendHeader(table.Row{"DB Path", "Entries", "Schema Version", "DB Checksum", "Valid"});
+      tbl.AppendRow(table.Row{d.DbFilePath, d.Entries, d.Version, d.IntegrityChecksum, d.IsValid});
       tbl.Render();
 
       // ok

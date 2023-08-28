@@ -6,6 +6,7 @@ import (
   "github.com/spf13/cobra"
 
   "github.com/mcaimi/gtoken/pkg/database"
+  "github.com/mcaimi/gtoken/pkg/token_io"
   "github.com/mcaimi/gtoken/pkg/common"
   "github.com/mcaimi/gtoken/cmd/gtoken/styles"
   "github.com/jedib0t/go-pretty/v6/table"
@@ -138,7 +139,7 @@ var (
 
       // fill data into the new token object
       newAccount := database.TokenEntity{Name: name, Email: email, Type: tok_type, Flavor: tok_flavor, Algorithm: tok_algo, Token: tok_seed, Interval: interval};
-      if err := ValidateToken(newAccount); err != nil {
+      if err := token_io.ValidateToken(newAccount); err != nil {
         fmt.Printf("Token Insert Error: %s\n", err);
         os.Exit(1);
       }
@@ -164,6 +165,44 @@ var (
           newAccount.Token,
         });
       tbl.Render();
+
+      // ok
+      os.Exit(0);
+    },
+  }
+
+  updateCmd = &cobra.Command {
+    Use: "update",
+    Short: "Update an exisiting account",
+    Long: "Update data fields related to an existing account in the DB.",
+    Aliases: []string{"u", "set"},
+    Run: func(cmd *cobra.Command, args []string) {
+      // parse command flags
+      uuid, _ := cmd.Flags().GetString("uuid");
+      name, _ := cmd.Flags().GetString("name");
+      email, _ := cmd.Flags().GetString("email");
+      tok_type, _ := cmd.Flags().GetString("type");
+      tok_flavor, _ := cmd.Flags().GetString("flavor");
+      tok_seed, _ := cmd.Flags().GetString("seed");
+      tok_algo, _ := cmd.Flags().GetString("algorithm");
+      interval, _ := cmd.Flags().GetInt64("interval");
+
+      // flags
+      uuidProvided := common.StringNotZeroLen(uuid);
+
+      if ! uuidProvided {
+        fmt.Printf("UUID Parameter is mandatory\n");
+        os.Exit(1);
+      }
+
+      // fill data into the new token object
+      newAccount := database.TokenEntity{Name: name, Email: email, Type: tok_type, Flavor: tok_flavor, Algorithm: tok_algo, Token: tok_seed, Interval: interval};
+      //
+      // update token
+      if err := UpdateToken(uuid, newAccount); err != nil {
+        fmt.Printf("Token Update Error: %s\n", err);
+        os.Exit(1);
+      }
 
       // ok
       os.Exit(0);
@@ -205,6 +244,16 @@ func init() {
   insertCmd.Flags().Int64P("interval", "i", 30, "Token Refresh Interval (seconds)");
   insertCmd.Flags().StringP("seed", "s", "", "Token Secret Seed");
 
+  // define flags (update command)
+  updateCmd.Flags().StringP("uuid", "u", "", "Update the account identified by the specified UUID");
+  updateCmd.Flags().StringP("name", "n", "", "Specify The Account Name");
+  updateCmd.Flags().StringP("email", "e", "", "E-Mail address associated with the Account");
+  updateCmd.Flags().StringP("type", "t", "totp", "Specify The Account Name");
+  updateCmd.Flags().StringP("flavor", "f", "google", "Two Factor Flavor (Google or RFC)");
+  updateCmd.Flags().StringP("algorithm", "a", "sha1", "Token Hash Function");
+  updateCmd.Flags().Int64P("interval", "i", 30, "Token Refresh Interval (seconds)");
+  updateCmd.Flags().StringP("seed", "s", "", "Token Secret Seed");
+
   // define flags (list cmd)
   listCmd.Flags().StringP("show-seed", "s", "", "Show the Token Seed associated with the specific Account UUID");
 
@@ -214,6 +263,7 @@ func init() {
   // build command
   AccountCmd.AddCommand(listCmd);
   AccountCmd.AddCommand(insertCmd);
+  AccountCmd.AddCommand(updateCmd);
   AccountCmd.AddCommand(generateCmd);
   AccountCmd.AddCommand(removeCmd);
 }

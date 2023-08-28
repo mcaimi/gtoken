@@ -18,6 +18,7 @@ type Database struct {
   Version string;
   Entries int;
   IntegrityChecksum string;
+  IsValid bool;
   DbFilePath string;
   Accounts []database.TokenEntity `json:"accounts"`;
 }

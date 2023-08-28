@@ -177,10 +177,10 @@ func (d *SqliteDatabase) IntegrityCheck() (bool, error) {
 }
 
 // search for a named account by UUID
-func (d *SqliteDatabase) SearchRow(UUID string) (TokenEntity, error) {
+func (d *SqliteDatabase) SearchRow(uuid string) (TokenEntity, error) {
   // make a query
   var row *sql.Row;
-  row = d.db.QueryRow(SEARCH_BY_UUID, UUID);
+  row = d.db.QueryRow(SEARCH_BY_UUID, uuid);
 
   // parse into a Token Struct
   var t TokenEntity;
@@ -193,9 +193,9 @@ func (d *SqliteDatabase) SearchRow(UUID string) (TokenEntity, error) {
 }
 
 // update a named token account
-func (d *SqliteDatabase) UpdateRow(UUID string, t TokenEntity) error {
+func (d *SqliteDatabase) UpdateRow(uuid string, t TokenEntity) error {
   // update a row
-  if r, err := d.db.Exec(ROW_UPDATE, t.UUID, t.Name, t.Email, t.Algorithm, t.Flavor, t.Interval, t.Type, t.Key, t.Period); err != nil {
+  if r, err := d.db.Exec(ROW_UPDATE, t.Name, t.Email, t.Algorithm, t.Flavor, t.Interval, t.Type, t.Key, t.Period, uuid); err != nil {
     return raise(err);
   } else {
     if n, err := r.RowsAffected(); err != nil {
