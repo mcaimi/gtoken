@@ -35,27 +35,23 @@ var (
     Long: "Displays a list of all OTP accounts currently configured in the database.",
     Aliases: []string{"l", "ls"},
     Run: func(cmd *cobra.Command, args []string) {
-      // load tokens
-      var tokens []database.TokenEntity;
-      var tokenError error;
-
       // flags
       var accountUUID string;
       var showSeed bool;
       accountUUID, _ = cmd.Flags().GetString("show-seed");
       showSeed = common.StringNotZeroLen(accountUUID);
 
-      tokens, tokenError = GenerateTokens();
-      if tokenError != nil {
-        fmt.Printf("Cannot Generate Tokens. Err: %s\n", tokenError);
-        os.Exit(1);
-      }
-      // Display Tokens
-      tbl := table.NewWriter();
-      tbl.SetOutputMirror(os.Stdout);
-      tbl.SetStyle(styles.GetStyle());
-
       if ! showSeed {
+        tokens, tokenError := LoadTokens();
+        if tokenError != nil {
+          fmt.Printf("Cannot Load Tokens. Err: %s\n", tokenError);
+          os.Exit(1);
+        }
+        // Display Tokens
+        tbl := table.NewWriter();
+        tbl.SetOutputMirror(os.Stdout);
+        tbl.SetStyle(styles.GetStyle());
+
         tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Type", "Flavor"});
         for item := range tokens {
           tbl.AppendRow(table.Row{
@@ -66,20 +62,31 @@ var (
             tokens[item].Flavor,
           });
         }
+        tbl.Render();
       } else {
-        tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Seed"});
-        for item := range tokens {
-          if tokens[item].UUID == accountUUID {
+        token, tokenError := LoadToken(accountUUID);
+        if tokenError != nil {
+          fmt.Println(tokenError);
+          os.Exit(1)
+        } else {
+          // Display Tokens
+          tbl := table.NewWriter();
+          tbl.SetOutputMirror(os.Stdout);
+          tbl.SetStyle(styles.GetStyle());
+
+          tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Seed"});
+          otpUrl := OtpUrl(token);
           tbl.AppendRow(table.Row{
-              tokens[item].UUID,
-              tokens[item].Name,
-              tokens[item].Email,
-              tokens[item].Key,
+              token.UUID,
+              token.Name,
+              token.Email,
+              token.Key,
             });
-          }
+          tbl.Render();
+
+          fmt.Printf("\nOtp Provisioning Url: \n[%s]\n", otpUrl);
         }
       }
-      tbl.Render();
 
       // ok
       os.Exit(0);

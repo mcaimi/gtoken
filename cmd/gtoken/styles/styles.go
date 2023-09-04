@@ -11,7 +11,7 @@ func GetStyle() table.Style {
   // customize default style
   tokenStyle.Name = "GToken Table Style";
   tokenStyle.Color.IndexColumn = text.Colors{text.BgBlack, text.FgHiBlue};
-  tokenStyle.Color.Footer = text.Colors{text.BgBlack, text.FgBlack};
+  tokenStyle.Color.Footer = text.Colors{text.BgBlack, text.FgHiBlue};
   tokenStyle.Color.Header = text.Colors{text.BgBlack, text.FgHiRed};
   tokenStyle.Color.Row = text.Colors{text.BgBlack, text.FgWhite};
   tokenStyle.Color.RowAlternate = text.Colors{text.BgBlack, text.FgHiWhite};
