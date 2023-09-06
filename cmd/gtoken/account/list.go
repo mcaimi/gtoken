@@ -68,7 +68,7 @@ func OtpUrl(k database.TokenEntity) string {
   labelString = url.QueryEscape(labelString);
 
   if k.Type == "totp" {
-    parmsTemplate := "secret=%s&issuer=%s&digits=%d&period=%s";
+    parmsTemplate := "secret=%s&issuer=%s&digits=%d&period=%d";
 
     // fill in parameters
     parmsString = fmt.Sprintf(parmsTemplate, k.Key, k.Name, k.Length, k.Interval);
