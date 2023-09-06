@@ -31,7 +31,8 @@ func LoadTokens() ([]database.TokenEntity, error) {
       Flavor: a.Flavor,
       Interval: a.Interval,
       Type: a.Type,
-      Key: a.Key};
+      Key: a.Key,
+      Length: a.Length};
   }
 
   return rows, nil;
@@ -67,10 +68,10 @@ func OtpUrl(k database.TokenEntity) string {
   labelString = url.QueryEscape(labelString);
 
   if k.Type == "totp" {
-    parmsTemplate := "secret=%s&issuer=%s&digits=6&period=%s";
+    parmsTemplate := "secret=%s&issuer=%s&digits=%d&period=%s";
 
     // fill in parameters
-    parmsString = fmt.Sprintf(parmsTemplate, k.Key, k.Name, k.Interval);
+    parmsString = fmt.Sprintf(parmsTemplate, k.Key, k.Name, k.Length, k.Interval);
     parmsString = url.QueryEscape(parmsString);
   }
 

@@ -11,6 +11,8 @@ const (
   totp_interval;
   totp_type;
   totp_key;
+  hotp_period;
+  token_length;
   totp_computed_value;
 )
 

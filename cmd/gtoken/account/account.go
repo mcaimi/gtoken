@@ -52,7 +52,7 @@ var (
         tbl.SetOutputMirror(os.Stdout);
         tbl.SetStyle(styles.GetStyle());
 
-        tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Type", "Flavor"});
+        tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Type", "Flavor", "Validity", "Length"});
         for item := range tokens {
           tbl.AppendRow(table.Row{
             tokens[item].UUID,
@@ -60,6 +60,8 @@ var (
             tokens[item].Email,
             tokens[item].Type,
             tokens[item].Flavor,
+            tokens[item].Interval,
+            tokens[item].Length,
           });
         }
         tbl.Render();
@@ -74,12 +76,15 @@ var (
           tbl.SetOutputMirror(os.Stdout);
           tbl.SetStyle(styles.GetStyle());
 
-          tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Seed"});
+          tbl.AppendHeader(table.Row{"UUID", "Account Name", "E-Mail Address", "Hash", "Length", "Validity", "Seed"});
           otpUrl := OtpUrl(token);
           tbl.AppendRow(table.Row{
               token.UUID,
               token.Name,
               token.Email,
+              token.Algorithm,
+              token.Length,
+              token.Interval,
               token.Key,
             });
           tbl.Render();
@@ -143,9 +148,10 @@ var (
       tok_seed, _ := cmd.Flags().GetString("seed");
       tok_algo, _ := cmd.Flags().GetString("algorithm");
       interval, _ := cmd.Flags().GetInt64("interval");
+      length, _ := cmd.Flags().GetInt64("length");
 
       // fill data into the new token object
-      newAccount := database.TokenEntity{Name: name, Email: email, Type: tok_type, Flavor: tok_flavor, Algorithm: tok_algo, Token: tok_seed, Interval: interval};
+      newAccount := database.TokenEntity{Name: name, Email: email, Type: tok_type, Flavor: tok_flavor, Algorithm: tok_algo, Key: tok_seed, Interval: interval, Length: length};
       if err := token_io.ValidateToken(newAccount); err != nil {
         fmt.Printf("Token Insert Error: %s\n", err);
         os.Exit(1);
@@ -162,14 +168,14 @@ var (
       tbl.SetOutputMirror(os.Stdout);
       tbl.SetStyle(styles.GetStyle());
 
-      tbl.AppendHeader(table.Row{"Account Name", "E-Mail Address", "Type", "Flavor", "Validity", "Token"});
+      tbl.AppendHeader(table.Row{"Account Name", "E-Mail Address", "Type", "Flavor", "Validity", "Length"});
       tbl.AppendRow(table.Row{
           newAccount.Name,
           newAccount.Email,
           newAccount.Type,
           newAccount.Flavor,
           newAccount.Interval,
-          newAccount.Token,
+          newAccount.Length,
         });
       tbl.Render();
 
@@ -193,6 +199,7 @@ var (
       tok_seed, _ := cmd.Flags().GetString("seed");
       tok_algo, _ := cmd.Flags().GetString("algorithm");
       interval, _ := cmd.Flags().GetInt64("interval");
+      length, _ := cmd.Flags().GetInt64("length");
 
       // flags
       uuidProvided := common.StringNotZeroLen(uuid);
@@ -203,7 +210,7 @@ var (
       }
 
       // fill data into the new token object
-      newAccount := database.TokenEntity{Name: name, Email: email, Type: tok_type, Flavor: tok_flavor, Algorithm: tok_algo, Token: tok_seed, Interval: interval};
+      newAccount := database.TokenEntity{Name: name, Email: email, Type: tok_type, Flavor: tok_flavor, Algorithm: tok_algo, Key: tok_seed, Interval: interval, Length: length};
       //
       // update token
       if err := UpdateToken(uuid, newAccount); err != nil {
@@ -249,6 +256,7 @@ func init() {
   insertCmd.Flags().StringP("flavor", "f", "google", "Two Factor Flavor (Google or RFC)");
   insertCmd.Flags().StringP("algorithm", "a", "sha1", "Token Hash Function");
   insertCmd.Flags().Int64P("interval", "i", 30, "Token Refresh Interval (seconds)");
+  insertCmd.Flags().Int64P("length", "l", 6, "Token Length");
   insertCmd.Flags().StringP("seed", "s", "", "Token Secret Seed");
 
   // define flags (update command)
@@ -259,6 +267,7 @@ func init() {
   updateCmd.Flags().StringP("flavor", "f", "google", "Two Factor Flavor (Google or RFC)");
   updateCmd.Flags().StringP("algorithm", "a", "sha1", "Token Hash Function");
   updateCmd.Flags().Int64P("interval", "i", 30, "Token Refresh Interval (seconds)");
+  updateCmd.Flags().Int64P("length", "l", 6, "Token Length");
   updateCmd.Flags().StringP("seed", "s", "", "Token Secret Seed");
 
   // define flags (list cmd)

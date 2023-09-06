@@ -31,6 +31,19 @@ var (
     },
   }
 
+  rehashCmd = &cobra.Command{
+    Use: "rehash",
+    Short: "Validates entries and rehashes the Database.",
+    Long: "Checks validity of each database entry and recomputes the DB checksum if everything is ok.",
+    Aliases: []string{"r", "rehash", "fix", "verify"},
+    Run: func(cmd *cobra.Command, args []string) {
+      if err := token_io.ValidateDatabase(); err != nil {
+        fmt.Printf("gtoken status error: [%s]\n", err);
+        os.Exit(1);
+      }
+    },
+  }
+
   statusCmd = &cobra.Command{
     Use: "status",
     Short: "Show status",
@@ -61,5 +74,6 @@ var (
 
 func init() {
   DatabaseCmd.AddCommand(initCmd);
+  DatabaseCmd.AddCommand(rehashCmd);
   DatabaseCmd.AddCommand(statusCmd);
 }

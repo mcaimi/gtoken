@@ -56,7 +56,7 @@ func ValidateToken(newToken database.TokenEntity) error {
     return err;
   }
   // validate string lengths
-  inputStringOk := common.StringNotZeroLen(newToken.Token) && common.StringNotZeroLen(newToken.Name)
+  inputStringOk := common.StringNotZeroLen(newToken.Key) && common.StringNotZeroLen(newToken.Name)
   if !inputStringOk {
     return fmt.Errorf("Token Seed and Account Name cannot be empty");
   }
@@ -74,15 +74,56 @@ func InitDB() error {
     // open and return database
     if db, e = database.NewDB(dbPath); e == nil {
       defer db.CloseDB();
-      // search entries
+      // initialize DB
       if e = db.DoInit(); e != nil {
         return e;
       }
-      // return database object
       return nil;
     }
   }
   return nil;
+}
+
+// recompute checksum 
+func ValidateDatabase() error {
+  var dbPath string;
+  var db *database.SqliteDatabase;
+  var e error;
+  var tokenArray Database;
+  // get default db path
+  if dbPath, e = common.GetAccountsDB(); e == nil {
+    // open and return database
+    if db, e = database.NewDB(dbPath); e == nil {
+      defer db.CloseDB();
+      // load entries
+      tokenArray.DbFilePath = dbPath;
+      if tokenArray.Accounts, e = db.AllRows(); e != nil {
+        return e;
+      }
+      // Read Metadata
+      if tokenArray.Version, tokenArray.Entries, tokenArray.IntegrityChecksum, e = db.ReadMetadata(); e != nil {
+        return e;
+      }
+
+      // validate entries
+      for i := range tokenArray.Accounts {
+        fmt.Printf("Validating entry [%s] ...", tokenArray.Accounts[i].UUID);
+        if e = ValidateToken(tokenArray.Accounts[i]); e != nil {
+          return errors.New(fmt.Sprintf("Malformed or Corrputed entry: UUID %s", tokenArray.Accounts[i].UUID));
+        }
+        fmt.Printf("OK\n");
+      }
+
+      // update checksum
+      fmt.Printf("%s\n", "Updating Checksum...");
+      if e = db.UpdateChecksum(); e != nil {
+        return e;
+      }
+      fmt.Printf("Done.\n");
+    }
+  }
+  return nil;
+
 }
 
 func InsertAccount(acct database.TokenEntity) error {
@@ -108,9 +149,9 @@ func InsertAccount(acct database.TokenEntity) error {
   return nil;
 }
 
-func InsertAccountByFields(name string, email string, key string, hash string, interval int64, acct_type string) error {
+func InsertAccountByFields(name string, email string, key string, hash string, interval int64, acct_type string, token_len int64) error {
   account_uuid := uuid.New().String();
-  var acct database.TokenEntity = database.TokenEntity{ Name: name, Email: email, Key: key, Algorithm: hash, Interval: interval, Type: acct_type, UUID: account_uuid }
+  var acct database.TokenEntity = database.TokenEntity{ Name: name, Email: email, Key: key, Algorithm: hash, Interval: interval, Type: acct_type, UUID: account_uuid, Length: token_len }
 
   // insert account
   if e := InsertAccount(acct); e != nil {
@@ -144,6 +185,7 @@ func UpdateAccount(accountUuid string, acct database.TokenEntity) error {
       updatedAccount.Flavor = common.Ternary(acct.Flavor != "", acct.Flavor, updatedAccount.Flavor);
       updatedAccount.Period = common.Ternary(acct.Period != 0, acct.Period, updatedAccount.Period);
       updatedAccount.Interval = common.Ternary(acct.Interval != 0, acct.Interval, updatedAccount.Interval);
+      updatedAccount.Length = common.Ternary(acct.Length != 0, acct.Length, updatedAccount.Length);
       updatedAccount.Key = common.Ternary(acct.Key != "", acct.Key, updatedAccount.Key);
 
       // Update row
@@ -228,7 +270,7 @@ func ReadAccountDb() (Database, error) {
       }
 
       if !isValid {
-        return Database{}, errors.New("Database integrity check failed. Db may be corrupted\n");
+        return Database{}, errors.New("Database integrity check failed. Database may be corrupted.");
       } else {
         tokenArray.IsValid = true;
       }

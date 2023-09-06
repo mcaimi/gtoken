@@ -98,9 +98,21 @@ func (d *SqliteDatabase) DoInit() error {
   return nil;
 }
 
+func (d *SqliteDatabase) UpdateChecksum() error {
+  if checksum, err := d.Checksum(); err != nil {
+    return raise(err);
+  } else {
+    if _, err := d.db.Exec(METADATA_UPDATE, SCHEMA_VERSION, d.TokenCount(), checksum, SCHEMA_VERSION); err != nil {
+      return raise(err);
+    }
+    fmt.Printf("Done.\n");
+  }
+  return nil;
+}
+
 // insert a new token
 func (d *SqliteDatabase) InsertRow(t TokenEntity) error {
-  if _, err := d.db.Exec(ROW_INSERT, t.UUID, t.Name, t.Email, t.Algorithm, t.Flavor, t.Interval, t.Type, t.Key, t.Period); err != nil {
+  if _, err := d.db.Exec(ROW_INSERT, t.UUID, t.Name, t.Email, t.Algorithm, t.Flavor, t.Interval, t.Type, t.Key, t.Period, t.Length); err != nil {
     return raise(err);
   }
 
@@ -129,7 +141,7 @@ func (d *SqliteDatabase) AllRows() ([]TokenEntity, error) {
     var tokens []TokenEntity;
     for rows.Next() {
       var t TokenEntity;
-      if err := rows.Scan(&t.UUID, &t.Name, &t.Email, &t.Algorithm, &t.Flavor, &t.Interval, &t.Type, &t.Key, &t.Period); err != nil {
+      if err := rows.Scan(&t.UUID, &t.Name, &t.Email, &t.Algorithm, &t.Flavor, &t.Interval, &t.Type, &t.Key, &t.Period, &t.Length); err != nil {
         return nil, raise(err);
       }
       tokens = append(tokens, t);
@@ -184,7 +196,7 @@ func (d *SqliteDatabase) SearchRow(uuid string) (TokenEntity, error) {
 
   // parse into a Token Struct
   var t TokenEntity;
-  if err := row.Scan(&t.UUID, &t.Name, &t.Email, &t.Algorithm, &t.Flavor, &t.Interval, &t.Type, &t.Key, &t.Period); err != nil {
+  if err := row.Scan(&t.UUID, &t.Name, &t.Email, &t.Algorithm, &t.Flavor, &t.Interval, &t.Type, &t.Key, &t.Period, &t.Length); err != nil {
     return TokenEntity{}, raise(err);
   }
 
@@ -195,7 +207,7 @@ func (d *SqliteDatabase) SearchRow(uuid string) (TokenEntity, error) {
 // update a named token account
 func (d *SqliteDatabase) UpdateRow(uuid string, t TokenEntity) error {
   // update a row
-  if r, err := d.db.Exec(ROW_UPDATE, t.Name, t.Email, t.Algorithm, t.Flavor, t.Interval, t.Type, t.Key, t.Period, uuid); err != nil {
+  if r, err := d.db.Exec(ROW_UPDATE, t.Name, t.Email, t.Algorithm, t.Flavor, t.Interval, t.Type, t.Key, t.Period, t.Length, uuid); err != nil {
     return raise(err);
   } else {
     if n, err := r.RowsAffected(); err != nil {

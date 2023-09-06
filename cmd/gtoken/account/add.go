@@ -6,23 +6,15 @@ import (
 )
 
 func InsertToken(newToken database.TokenEntity) error {
-  // Build Account object
-  var acct database.TokenEntity;
-  acct = database.TokenEntity{
-    Name: newToken.Name,
-    Email: newToken.Email,
-    Key: newToken.Token,
-    Algorithm: newToken.Algorithm, 
-    Interval: newToken.Interval,
-    Flavor: newToken.Flavor,
-    Type: newToken.Type,
+  // validate
+  if err := token_io.ValidateToken(newToken); err != nil {
+    return err;
+  } else {
+    // insert token
+    if e := token_io.InsertAccount(newToken); e != nil {
+      return e;
+    }
   }
-
-  // insert token
-  if e := token_io.InsertAccount(acct); e != nil {
-    return e;
-  }
-
   return nil;
 }
 

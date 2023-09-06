@@ -11,6 +11,7 @@ type TokenEntity struct {
   Type string `json:"type"`;
   Key string `json:"key"`;
   Period int64 `json:"period"`;
+  Length int64 `json:"token_length"`;
   Token string;
 }
 

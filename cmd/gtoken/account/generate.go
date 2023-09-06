@@ -24,7 +24,7 @@ func GenerateTokens() ([]database.TokenEntity, error) {
     // compute totp token
     var token string;
     if a.Flavor == "google" {
-      token = rfc6238.GoogleAuth([]byte(a.Key), 6);
+      token = rfc6238.GoogleAuth([]byte(a.Key), int(a.Length));
     } else {
       token = "Not Implemented";
     }
@@ -38,6 +38,7 @@ func GenerateTokens() ([]database.TokenEntity, error) {
       Interval: a.Interval,
       Type: a.Type,
       Key: a.Key,
+      Length: a.Length,
       Token: token};
   }
 
