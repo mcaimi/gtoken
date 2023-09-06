@@ -6,6 +6,7 @@ import (
 
   "github.com/spf13/cobra"
   "github.com/mcaimi/gtoken/pkg/token_io"
+  "github.com/mcaimi/gtoken/pkg/common"
   "github.com/mcaimi/gtoken/cmd/gtoken/styles"
   "github.com/jedib0t/go-pretty/v6/table"
 )
@@ -44,6 +45,27 @@ var (
     },
   }
 
+  dumpCmd = &cobra.Command{
+    Use: "dump",
+    Short: "Dumps DB contents to a JSON file",
+    Long: "Dumps all accounts stored into the Database into a JSON file.",
+    Aliases: []string{"d", "dump", "export"},
+    Run: func(cmd *cobra.Command, args []string) {
+      fName, _ := cmd.Flags().GetString("filename");
+      dumpOk := common.StringNotZeroLen(fName);
+
+      if ! dumpOk {
+        fmt.Println("Invalid output Filename");
+        os.Exit(1);
+      } else {
+        if err := token_io.JsonDump(fName); err != nil {
+          fmt.Printf("gtoken status error: [%s]\n", err);
+          os.Exit(1);
+        }
+      }
+    },
+  }
+
   statusCmd = &cobra.Command{
     Use: "status",
     Short: "Show status",
@@ -73,7 +95,11 @@ var (
 )
 
 func init() {
+  // parameters
+  dumpCmd.Flags().StringP("filename", "f", "", "File name where to dump account data.");
+
   DatabaseCmd.AddCommand(initCmd);
   DatabaseCmd.AddCommand(rehashCmd);
+  DatabaseCmd.AddCommand(dumpCmd);
   DatabaseCmd.AddCommand(statusCmd);
 }

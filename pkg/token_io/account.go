@@ -11,36 +11,32 @@ import (
   "github.com/mcaimi/gtoken/pkg/database"
 )
 
-func JsonOpen(fileName string) (Database, error) {
+func JsonDump(fileName string) error {
   var accountDescriptor *os.File;
   var err error;
 
-  accountDescriptor, err = os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0700);
+  accountDescriptor, err = os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0600);
   if err != nil {
-    return Database{}, err;
+    return err;
   }
   defer accountDescriptor.Close();
 
-  // load accounts from json file
-  var fileContents []byte;
-  var fileInfo os.FileInfo;
-  fileInfo, err = accountDescriptor.Stat();
-  if err != nil {
-    return Database{}, err;
-  }
-  fileContents = make([]byte, fileInfo.Size());
-
   var accountsDb Database;
-  _, err = accountDescriptor.Read(fileContents);
-
-  // unmarshal results
-  err = json.Unmarshal(fileContents, &accountsDb);
-  if err != nil {
-    return Database{}, nil;
+  if accountsDb, err = ReadAccountDb(); err != nil {
+    return err;
   }
 
-  // return data
-  return accountsDb, nil;
+  // dump accounts to file
+  var marshaledContent []byte;
+  if marshaledContent, err = json.Marshal(accountsDb.Accounts); err != nil {
+    return err;
+  }
+
+  // write to file
+  accountDescriptor.Write(marshaledContent);
+
+  // return
+  return nil;
 }
 
 func ValidateToken(newToken database.TokenEntity) error {
