@@ -66,6 +66,27 @@ var (
     },
   }
 
+  importCmd = &cobra.Command{
+    Use: "import",
+    Short: "Restores a DB backup",
+    Long: "Populates a newly created, empty DB with previously exported data. Data needs to be JSON-formatted, as by using the \"dump\" command.",
+    Aliases: []string{"i", "import", "load"},
+    Run: func(cmd *cobra.Command, args []string) {
+      fName, _ := cmd.Flags().GetString("filename");
+      dumpOk := common.StringNotZeroLen(fName);
+
+      if ! dumpOk {
+        fmt.Println("Invalid output Filename");
+        os.Exit(1);
+      } else {
+        if err := token_io.JsonLoad(fName); err != nil {
+          fmt.Printf("gtoken status error: [%s]\n", err);
+          os.Exit(1);
+        }
+      }
+    },
+  }
+
   statusCmd = &cobra.Command{
     Use: "status",
     Short: "Show status",
@@ -97,9 +118,11 @@ var (
 func init() {
   // parameters
   dumpCmd.Flags().StringP("filename", "f", "", "File name where to dump account data.");
+  importCmd.Flags().StringP("filename", "f", "", "File name containing a database dump.");
 
   DatabaseCmd.AddCommand(initCmd);
   DatabaseCmd.AddCommand(rehashCmd);
   DatabaseCmd.AddCommand(dumpCmd);
+  DatabaseCmd.AddCommand(importCmd);
   DatabaseCmd.AddCommand(statusCmd);
 }

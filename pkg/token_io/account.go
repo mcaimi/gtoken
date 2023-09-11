@@ -11,6 +11,57 @@ import (
   "github.com/mcaimi/gtoken/pkg/database"
 )
 
+func JsonLoad(filename string) error {
+  var accountBackupDescriptor *os.File;
+  var err error;
+
+  accountBackupDescriptor, err = os.OpenFile(filename, os.O_RDONLY, 0600);
+  if err != nil {
+    return err;
+  }
+  defer accountBackupDescriptor.Close();
+
+  // load accounts from json file
+  var fileContents []byte;
+  var fileInfo os.FileInfo;
+  fileInfo, err = accountBackupDescriptor.Stat();
+  if err != nil {
+    return err;
+  }
+  fileContents = make([]byte, fileInfo.Size());
+
+  var accountsDb Database;
+  _, err = accountBackupDescriptor.Read(fileContents);
+
+  // unmarshal results
+  err = json.Unmarshal(fileContents, &accountsDb.Accounts);
+  if err != nil {
+    return nil;
+  }
+
+  // import data into the database
+  // get default db path
+  var dbPath string;
+  var db *database.SqliteDatabase;
+  if dbPath, err = common.GetAccountsDB(); err == nil {
+    // open and return database
+    if db, err = database.NewDB(dbPath); err == nil {
+      defer db.CloseDB();
+      // load entries
+      for entry := range accountsDb.Accounts {
+        fmt.Printf("Importing entry [%s]...", accountsDb.Accounts[entry].UUID);
+        if err = db.InsertRow(accountsDb.Accounts[entry]); err != nil {
+          return err;
+        }
+        fmt.Printf("..OK\n");
+      }
+    }
+  }
+
+  // return data
+  return nil;
+}
+
 func JsonDump(fileName string) error {
   var accountDescriptor *os.File;
   var err error;
